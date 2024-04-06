@@ -1,5 +1,10 @@
 #!/bin/bash
 
+# Function to print text in blue color
+print_blue() {
+    echo -e "\e[1;34m$1\e[0m"
+}
+
 # Install required packages
 apt install wget git -y || { echo "Failed to install required packages"; exit 1; }
 
@@ -18,5 +23,5 @@ mv github /usr/local/bin/ || { echo "Failed to move file to bin"; exit 1; }
 # Clean up
 rm -rf install.sh || { echo "Failed to remove install.sh"; exit 1; }
 
-# Success message
-echo "Installation successful. You can now use 'github --help'."
+# Success message in blue color
+print_blue "Installation successful. You can now use 'github --help'."
