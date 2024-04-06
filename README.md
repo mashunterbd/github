@@ -14,11 +14,11 @@ dependency: <b> git </b>
 # How can I get my API token 
 <b> To get your API token from your GitHub account, you can follow these steps: </b>
 
-Log in to GitHub: Go to the GitHub website (https://github.com/) and log in to your GitHub account if you haven't already.
+<b> Log in to GitHub</b>: Go to the GitHub website (https://github.com/) and log in to your GitHub account if you haven't already.
 
-Go to Settings: Click on your profile picture in the top-right corner of the page, then click on "Settings" from the dropdown menu.
+<b>Go to Settings </b>: Click on your profile picture in the top-right corner of the page, then click on "Settings" from the dropdown menu.
 
-Navigate to Developer Settings: In the left sidebar of the Settings page, click on "Developer settings".
+<b> Navigate to Developer Settings</b>: In the left sidebar of the Settings page, click on "Developer settings".
 
 Generate a New Token: In the Developer settings page, click on "Personal access tokens" from the left sidebar, then click on the "Generate new token" button.
 
