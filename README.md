@@ -9,7 +9,7 @@ wget https://raw.githubusercontent.com/mashunterbd/github/install.sh && chmod +x
 # Requirements
 To use it you must need the <b> API </b>  token of your GitHub Account.
 
-#How can I get my API token 
+# How can I get my API token 
 To get your API token from your GitHub account, you can follow these steps:
 
 Log in to GitHub: Go to the GitHub website (https://github.com/) and log in to your GitHub account if you haven't already.
