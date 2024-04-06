@@ -1,5 +1,8 @@
 #!/bin/bash 
 
+apt install wget git -y
+
+# then 
 
 wget https://raw.githubusercontent.com/mashunterbd/github/github.sh
 
