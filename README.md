@@ -12,7 +12,7 @@ dependency: <b> git </b>
 
 
 # How can I get my API token 
-To get your API token from your GitHub account, you can follow these steps:
+<b> To get your API token from your GitHub account, you can follow these steps: </b>
 
 Log in to GitHub: Go to the GitHub website (https://github.com/) and log in to your GitHub account if you haven't already.
 
