@@ -2,7 +2,7 @@
 
 # Function to print text in blue color
 print_blue() {
-    echo -e "\e[1;34m$1\e[0m"
+    echo "$(tput setaf 4)$1$(tput sgr0)"
 }
 
 # Install required packages
