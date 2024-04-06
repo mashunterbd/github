@@ -1,26 +1,22 @@
 #!/bin/bash
 
-apt install wget git -y
+# Install required packages
+apt install wget git -y || { echo "Failed to install required packages"; exit 1; }
 
-# then 
-wget -O github.sh https://raw.githubusercontent.com/mashunterbd/github/main/github.sh
+# Download github.sh script
+wget -O github.sh https://raw.githubusercontent.com/mashunterbd/github/main/github.sh || { echo "Failed to download script"; exit 1; }
 
-# Permission
-chmod +x github.sh 
+# Set execute permission
+chmod +x github.sh || { echo "Failed to set execute permission"; exit 1; }
 
-# Reneame this file  
+# Rename the file
+mv github.sh github || { echo "Failed to rename file"; exit 1; }
 
-mv github.sh github
+# Move the file to bin
+mv github /usr/local/bin/ || { echo "Failed to move file to bin"; exit 1; }
 
-# Move this file to bin
+# Clean up
+rm -rf install.sh || { echo "Failed to remove install.sh"; exit 1; }
 
-mv github /usr/local/bin/ 
-
-# delete
-rm -rf install.sh
-
-echo "Install Successful"
-
-echo "try to use now"
-
-echo "github --help"
+# Success message
+echo "Installation successful. You can now use 'github --help'."
