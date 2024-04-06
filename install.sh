@@ -3,8 +3,7 @@
 apt install wget git -y
 
 # then 
-
-wget https://github.com/mashunterbd/github/blob/main/github.sh
+wget -O github.sh https://raw.githubusercontent.com/mashunterbd/github/main/github.sh
 
 # Permission
 chmod +x github.sh 
