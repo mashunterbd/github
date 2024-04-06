@@ -28,6 +28,6 @@ Generate Token: After configuring the token, click on the "Generate token" butto
 
 Copy Token: Once the token is generated, copy it to a safe place. This is the only time you'll be able to see the token, so make sure to copy it securely.
 
-Store Token Securely: Treat your API token like a password and store it securely. Do not share it with anyone and avoid committing it to public repositories.
+<b> Store Token Securely </b>: Treat your API token like a password and store it securely. Do not share it with anyone and avoid committing it to public repositories.
 
 That's it! You now have your API token from your GitHub account, which you can use for various purposes such as accessing GitHub's API or authenticating with GitHub services.
