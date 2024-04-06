@@ -16,6 +16,9 @@ mv github.sh github
 
 mv github /usr/local/bin/ 
 
+# delete
+rm -rf install.sh
+
 echo "Install Successful"
 
 echo "try to use now"
