@@ -1,6 +1,9 @@
 # About this tool 
 I scripted this tool to automate because we need to upload different files to our GitHub repository from time to time.Then executing a comment and uploading it is a lot of trouble and a lot of time wasted. For this, I created this script so that we can do the work in a very short time.
 
+![Screenshot_2024-04-08-15-48-39-941_com offsec nhterm](https://github.com/mashunterbd/github/assets/108648096/c0fcc49a-ec3f-4205-99f0-7d4447b62b79)
+
+
 # Install in Linux Distro
 ```
 wget -O install.sh https://raw.githubusercontent.com/mashunterbd/github/main/install.sh && chmod +x install.sh && bash install.sh
