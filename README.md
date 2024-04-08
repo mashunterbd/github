@@ -13,7 +13,28 @@ wget -O install.sh https://raw.githubusercontent.com/mashunterbd/github/main/ins
 To use it you must need the <b> API </b>  token of your GitHub Account. </br>
 dependency: <b> git </b> 
 
+# Uges
+```
+┌──(root㉿kali)-[/]
+└─# github --help
 
+It is basically an automatic tool through which you can create a repository and upload your files there remotely and delete them if you want. In this case only your account should have API token.
+
+
+Usegs:
+
+ github [option]
+
+
+ -push: Publish all files in your current directory to your GitHub account.
+
+ -del: Delete any repository in your account.
+
+ --help: Display uses.
+
+ -v: Check for version.
+
+```
 # How can I get my API token 
 <b> To get your API token from your GitHub account, you can follow these steps: </b>
 
