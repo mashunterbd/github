@@ -18,124 +18,177 @@ ascii_banner="      ___                                     ___           ___
 # Print the ASCII banner
 echo -e "\033[1;36m$ascii_banner\033[0m"
 
+CREDENTIALS_FILE="$HOME/.github_credentials"
 
-if [ "$1" == "--help" ]; then
-    echo "It is basically an automatic tool through which you can create a repository and upload your files there remotely and delete them if you want. In this case only your account should have API token."
+# Function to display help
+display_help() {
+    echo "GitHub Tool - by @mashunterbd"
+    echo ""
+    echo "This tool allows you to manage your GitHub repositories from the command line."
+    echo "You can create, push to, and delete repositories with ease."
+    echo ""
+    echo "Usage:"
+    echo "  github [option]"
+    echo ""
+    echo "Options:"
+    echo "  -push        Create a new repository and push all files from the current directory."
+    echo "  -del         Delete a repository from your GitHub account."
+    echo "  --help       Display this help menu."
+    echo "  -v           Display the version information."
+    echo "  -save        Save your GitHub credentials (username and API token)."
+    echo ""
+    echo "Examples:"
+    echo "  github -push"
+    echo "    Prompts for necessary information and pushes the current directory's files to a new GitHub repository."
+    echo ""
+    echo "  github -del"
+    echo "    Prompts for the repository name and deletes it from your GitHub account after confirmation."
+    echo ""
+    echo "  github -save"
+    echo "    Prompts for your GitHub username and API token and saves them for future use."
+    echo ""
+    echo "Note:"
+    echo "  This tool requires a GitHub API token with the necessary permissions."
+    echo "  Ensure that 'git' and 'curl' are installed and available in your PATH."
+    echo ""
+    echo "For more information, visit: https://github.com/mashunterbd"
+}
 
-echo ""   # Empty echo for a line break
-echo ""
-
-    echo "Usegs:"  
-    echo "" 
-    echo " github [option] "
-echo ""   # Empty echo for a line break
-echo ""
-
-    echo " -push: Publish all files in your current directory to your GitHub account."  
-    echo "" 
-
-    echo " -del: Delete any repository in your account."  
-    echo "" 
-
-    echo " --help: Display uses."  
-    echo "" 
-
-    echo " -v: Check for version."  
-    echo "" 
-
-    exit 0
-fi
-
-if [ "$1" == "-push" ]; then
-    # Prompt user for GitHub username
-    read -p "Enter your GitHub username: " username
-
-    # Prompt user for API token
-    read -p "Enter your GitHub API token: " token
-
-    # Prompt user for repository name
-    read -p "Enter the repository name: " repo_name
-
-    # Prompt user to choose repository visibility
-    read -p "Do you want to create a public (1) or private (2) repository? " visibility
-
-    if [ $visibility -eq 1 ]; then
-        visibility_option="false"
-    elif [ $visibility -eq 2 ]; then
-        visibility_option="true"
+# Function to read GitHub credentials
+read_credentials() {
+    if [ -f "$CREDENTIALS_FILE" ]; then
+        source "$CREDENTIALS_FILE"
     else
-        echo "Invalid option. Please choose 1 for public or 2 for private."
+        read -p "Enter your GitHub username: " username
+        read -s -p "Enter your GitHub API token: " token
+        echo ""
+    fi
+}
+
+# Function to verify GitHub credentials
+verify_credentials() {
+    local username=$1
+    local token=$2
+    local response
+    response=$(curl -s -u "$username:$token" https://api.github.com/user)
+
+    if [[ "$response" == *"\"login\": \"$username\""* ]]; then
+        return 0
+    else
+        return 1
+    fi
+}
+
+# Function to save GitHub credentials
+save_credentials() {
+    read -p "Enter your GitHub username: " username
+    read -s -p "Enter your GitHub API token: " token
+    echo ""
+
+    if verify_credentials "$username" "$token"; then
+        echo "username=$username" > "$CREDENTIALS_FILE"
+        echo "token=$token" >> "$CREDENTIALS_FILE"
+        chmod 600 "$CREDENTIALS_FILE"
+        echo "Credentials verified and saved successfully."
+    else
+        echo "Invalid credentials. Please try again."
         exit 1
     fi
+}
 
-    # Check if the repository already exists
-    repo_exists=$(curl -s -o /dev/null -w "%{http_code}" -H "Authorization: token $token" https://api.github.com/repos/$username/$repo_name)
+# Function to check if a repository exists
+check_repo_exists() {
+    local repo_name=$1
+    local response
+    response=$(curl -s -o /dev/null -w "%{http_code}" -H "Authorization: token $token" "https://api.github.com/repos/$username/$repo_name")
+    echo "$response"
+}
 
-    if [ $repo_exists -eq 200 ]; then
-        echo "Repository already exists."
+# Function to check if the repository has any existing files
+check_repo_files() {
+    local repo_name=$1
+    local response
+    response=$(curl -s -H "Authorization: token $token" "https://api.github.com/repos/$username/$repo_name/contents")
+    if [[ "$response" == "[]" ]]; then
+        echo "empty"
     else
-        # Create repository on GitHub
-        curl -s -H "Authorization: token $token" -d '{"name": "'"$repo_name"'", "private": '$visibility_option'}' https://api.github.com/user/repos
-        echo "Repository created successfully."
+        echo "not_empty"
     fi
+}
 
-    # Initialize a Git repository in the current directory
-    git init
+# Function to create a GitHub repository
+create_repo() {
+    local repo_name=$1
+    local visibility_option=$2
+    curl -s -H "Authorization: token $token" -d '{"name": "'"$repo_name"'", "private": '"$visibility_option"'}' https://api.github.com/user/repos
+}
 
-    # Add a remote named 'origin' for the GitHub repository
-    git remote add origin "https://github.com/$username/$repo_name.git"
+# Handle command line arguments
+case "$1" in
+    --help)
+        display_help
+        exit 0
+        ;;
+    -save)
+        save_credentials
+        exit 0
+        ;;
+    -push)
+        read_credentials
+        read -p "Enter the repository name: " repo_name
+        read -p "Do you want to create a public (1) or private (2) repository? " visibility
 
-    # Set the remote URL for push
-    git remote set-url origin "https://$token@github.com/$username/$repo_name"
-
-    # Switch to the 'main' branch (assuming it's the default branch)
-    git branch -M main
-
-    # Add all files to the staging area
-    git add .
-
-    # Commit the changes
-    git commit -m "Initial commit"
-
-    # Push the changes to the remote repository
-    git push -u origin main
-
-    # Check the status of the repository
-    git status
-fi
-
-if [ "$1" == "-del" ]; then
-    # Prompt user for GitHub API token
-    read -p "Enter your GitHub API token: " token
-
-    # Prompt user for GitHub username
-    read -p "Enter your GitHub username: " username
-
-    # Prompt user for repository name to delete
-    read -p "Enter the name of the repository you want to delete: " repo_name
-
-    # Check if the repository exists
-    repo_exists=$(curl -s -o /dev/null -w "%{http_code}" -H "Authorization: token $token" https://api.github.com/repos/$username/$repo_name)
-
-    if [ $repo_exists -eq 200 ]; then
-        # Repository exists, ask for confirmation
-        echo "Repository found: $repo_name"
-        read -p "Are you sure you want to delete $repo_name? (yes/no): " confirmation
-        if [ "$confirmation" = "yes" ]; then
-            # Delete repository on GitHub
-            curl -X DELETE -s -H "Authorization: token $token" https://api.github.com/repos/$username/$repo_name
-            echo "Repository $repo_name successfully deleted."
+        if [ "$visibility" -eq 1 ]; then
+            visibility_option="false"
+        elif [ "$visibility" -eq 2 ]; then
+            visibility_option="true"
         else
-            echo "Deletion cancelled. Repository $repo_name was not deleted."
+            echo "Invalid option. Please choose 1 for public or 2 for private."
+            exit 1
         fi
-    else
-        # Repository does not exist
-        echo "Repository $repo_name not found in $username's account."
-    fi
-fi
 
-if [ "$1" == "-v" ]; then
-    echo "1.0 (stable)"
-    echo "Owner: https://github.com/mashunterbd"
-fi
+        repo_exists=$(check_repo_exists "$repo_name")
 
+        if [ "$repo_exists" -eq 200 ]; then
+            echo "Repository already exists."
+        else
+            create_repo "$repo_name" "$visibility_option"
+            echo "Repository created successfully."
+        fi
+
+        # Initialize and push to GitHub
+        git init
+        git remote add origin "https://$username:$token@github.com/$username/$repo_name.git"
+        git branch -M main
+        git add .
+        git commit -m "Initial commit"
+        git push -u origin main
+        git status
+        ;;
+    -del)
+        read_credentials
+        read -p "Enter the name of the repository you want to delete: " repo_name
+
+        repo_exists=$(check_repo_exists "$repo_name")
+
+        if [ "$repo_exists" -eq 200 ]; then
+            echo "Repository found: $repo_name"
+            read -p "Are you sure you want to delete $repo_name? (yes/no): " confirmation
+            if [ "$confirmation" = "yes" ]; then
+                curl -X DELETE -s -H "Authorization: token $token" "https://api.github.com/repos/$username/$repo_name"
+                echo "Repository $repo_name successfully deleted."
+            else
+                echo "Deletion cancelled. Repository $repo_name was not deleted."
+            fi
+        else
+            echo "Repository $repo_name not found in $username's account."
+        fi
+        ;;
+    -v)
+        echo "1.0 (stable)"
+        echo "Owner: https://github.com/mashunterbd"
+        ;;
+    *)
+        echo "Invalid option. Use --help to see the available options."
+        ;;
+esac
