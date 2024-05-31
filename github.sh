@@ -51,7 +51,7 @@ display_help() {
     echo "  This tool requires a GitHub API token with the necessary permissions."
     echo "  Ensure that 'git' and 'curl' are installed and available in your PATH."
     echo ""
-    echo "For more information, visit: https://github.com/mashunterbd"
+    echo "For more information, visit: https://github.com/mashunterbd/github"
 }
 
 # Function to read GitHub credentials
