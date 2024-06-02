@@ -1,3 +1,7 @@
+![Made by](https://img.shields.io/badge/Made%20by-Shell-%23ff0000?style=flat-square&logo=bash&logoColor=white&labelColor=%23000000)
+![Latest version](https://img.shields.io/badge/Latest-version-%23000000?style=flat&labelColor=%230000ff)
+[![youtube](https://img.shields.io/badge/youtube-Watch%23on%23YouTube-%23000000?style=flat-square&logo=youtube&logoColor=white&labelColor=%23ff0000)](https://youtu.be/V58od-9IP1U)
+
 # About this tool 
 I scripted this tool to automate because we need to upload different files to our GitHub repository from time to time.Then executing a comment and uploading it is a lot of trouble and a lot of time wasted. For this, I created this script so that we can do the work in a very short time.
 
