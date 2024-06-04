@@ -33,6 +33,7 @@ display_help() {
     echo "Options:"
     echo "  -push        Create a new repository and push all files from the current directory."
     echo "  -del         Delete a repository from your GitHub account."
+    echo "  -list        List all repositories in your GitHub account."
     echo "  --help       Display this help menu."
     echo "  -v           Display the version information."
     echo "  -save        Save your GitHub credentials (username and API token)."
@@ -43,6 +44,9 @@ display_help() {
     echo ""
     echo "  github -del"
     echo "    Prompts for the repository name and deletes it from your GitHub account after confirmation."
+    echo ""
+    echo "  github -list"
+    echo "    Lists all repositories in your GitHub account."
     echo ""
     echo "  github -save"
     echo "    Prompts for your GitHub username and API token and saves them for future use."
@@ -59,9 +63,8 @@ read_credentials() {
     if [ -f "$CREDENTIALS_FILE" ]; then
         source "$CREDENTIALS_FILE"
     else
-        read -p "Enter your GitHub username: " username
-        read -s -p "Enter your GitHub API token: " token
-        echo ""
+        echo "No credentials file found. Please save your credentials using the -save option."
+        exit 1
     fi
 }
 
@@ -86,13 +89,41 @@ save_credentials() {
     echo ""
 
     if verify_credentials "$username" "$token"; then
-        echo "username=$username" > "$CREDENTIALS_FILE"
+        if [ ! -f "$CREDENTIALS_FILE" ]; then
+            touch "$CREDENTIALS_FILE"
+        fi
+
+        if grep -q "username=$username" "$CREDENTIALS_FILE"; then
+            sed -i "/username=$username/,+1d" "$CREDENTIALS_FILE"
+        fi
+
+        echo "username=$username" >> "$CREDENTIALS_FILE"
         echo "token=$token" >> "$CREDENTIALS_FILE"
         chmod 600 "$CREDENTIALS_FILE"
         echo "Credentials verified and saved successfully."
     else
         echo "Invalid credentials. Please try again."
         exit 1
+    fi
+}
+
+# Function to select which account to use
+select_account() {
+    read_credentials
+    local accounts
+    accounts=$(grep -oP 'username=\K.*' "$CREDENTIALS_FILE")
+    local count
+    count=$(echo "$accounts" | wc -l)
+
+    if [ "$count" -eq 1 ]; then
+        username=$(echo "$accounts" | sed -n '1p')
+        token=$(grep -A 1 "username=$username" "$CREDENTIALS_FILE" | grep -oP 'token=\K.*')
+    else
+        echo "Select the account to use:"
+        echo "$accounts" | nl -w2 -s'. '
+        read -p "Enter the number of the account: " account_number
+        username=$(echo "$accounts" | sed -n "${account_number}p")
+        token=$(grep -A 1 "username=$username" "$CREDENTIALS_FILE" | grep -oP 'token=\K.*')
     fi
 }
 
@@ -123,6 +154,24 @@ create_repo() {
     curl -s -H "Authorization: token $token" -d '{"name": "'"$repo_name"'", "private": '"$visibility_option"'}' https://api.github.com/user/repos
 }
 
+# Function to list all repositories in the user's account
+list_repos() {
+    select_account
+    local response
+    response=$(curl -s -H "Authorization: token $token" "https://api.github.com/user/repos?per_page=100")
+
+    if [[ "$response" == *"\"full_name\""* ]]; then
+        echo "List of repositories in your GitHub account:"
+        echo "$response" | grep -oP '"full_name": "\K[^"]+' | nl
+        local count
+        count=$(echo "$response" | grep -oP '"full_name": "\K[^"]+' | wc -l)
+        echo ""
+        echo "Total repositories: $count"
+    else
+        echo "Failed to retrieve repositories or no repositories found."
+    fi
+}
+
 # Handle command line arguments
 case "$1" in
     --help)
@@ -134,7 +183,7 @@ case "$1" in
         exit 0
         ;;
     -push)
-        read_credentials
+        select_account
         read -p "Enter the repository name: " repo_name
         read -p "Do you want to create a public (1) or private (2) repository? " visibility
 
@@ -166,7 +215,7 @@ case "$1" in
         git status
         ;;
     -del)
-        read_credentials
+        select_account
         read -p "Enter the name of the repository you want to delete: " repo_name
 
         repo_exists=$(check_repo_exists "$repo_name")
@@ -183,6 +232,9 @@ case "$1" in
         else
             echo "Repository $repo_name not found in $username's account."
         fi
+        ;;
+    -list)
+        list_repos
         ;;
     -v)
         echo "1.0 (stable)"
