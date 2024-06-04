@@ -9,6 +9,7 @@ I scripted this tool to automate because we need to upload different files to ou
 
 
 # Install in Linux Distro
+![Linux](https://img.shields.io/badge/Linux-blue?style=flat-square)
 ```
 wget -O install.sh https://raw.githubusercontent.com/mashunterbd/github/main/install.sh && chmod +x install.sh && bash install.sh
 ```
