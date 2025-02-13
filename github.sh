@@ -34,6 +34,7 @@ display_help() {
     echo "  -push        Create a new repository and push all files from the current directory."
     echo "  -del         Delete a repository from your GitHub account."
     echo "  -list        List all repositories in your GitHub account."
+    echo "  -repo-update Update an existing repository with local changes."
     echo "  --help       Display this help menu."
     echo "  -v           Display the version information."
     echo "  -save        Save your GitHub credentials (username and API token)."
@@ -47,6 +48,9 @@ display_help() {
     echo ""
     echo "  github -list"
     echo "    Lists all repositories in your GitHub account."
+    echo ""
+    echo "  github -repo-update"
+    echo "    Updates an existing repository with local changes."
     echo ""
     echo "  github -save"
     echo "    Prompts for your GitHub username and API token and saves them for future use."
@@ -172,6 +176,59 @@ list_repos() {
     fi
 }
 
+# Function to update an existing repository
+update_repo() {
+    select_account
+
+    # Step 1: Add all changes
+    git add .
+
+    # Step 2: Ask for commit message
+    echo "Do you want to add a custom commit message? (y/n): "
+    read -r response
+
+    if [[ "$response" =~ ^([yY][eE][sS]|[yY])$ ]]; then
+        echo "Enter your commit message: "
+        read -r commit_message
+    else
+        commit_message="new file added"
+    fi
+
+    # Step 3: Commit changes
+    git commit -m "$commit_message"
+
+    # Step 4: Check available branches
+    branches=$(git branch -r | sed 's/origin\///' | tr -d ' ')
+
+    # Convert branches to an array
+    branch_array=($branches)
+
+    # If more than one branch exists, ask user to select one
+    if [ ${#branch_array[@]} -gt 1 ]; then
+        echo "Multiple branches detected. Please select a branch to push to:"
+        for i in "${!branch_array[@]}"; do
+            echo "$((i+1)). ${branch_array[$i]}"
+        done
+
+        echo "Enter the number of the branch you want to push to: "
+        read -r branch_number
+
+        # Validate user input
+        if [[ "$branch_number" =~ ^[0-9]+$ ]] && [ "$branch_number" -ge 1 ] && [ "$branch_number" -le ${#branch_array[@]} ]; then
+            selected_branch="${branch_array[$((branch_number-1))]}"
+        else
+            echo "Invalid selection. Exiting."
+            exit 1
+        fi
+    else
+        selected_branch="${branch_array[0]}"
+    fi
+
+    # Step 5: Push changes to the selected branch using the token
+    echo "Pushing changes to branch: $selected_branch"
+    git push "https://$username:$token@github.com/$username/$(basename -s .git $(git config --get remote.origin.url)).git" "$selected_branch"
+}
+
 # Handle command line arguments
 case "$1" in
     --help)
@@ -235,6 +292,9 @@ case "$1" in
         ;;
     -list)
         list_repos
+        ;;
+    -repo-update)
+        update_repo
         ;;
     -v)
         echo "1.0 (stable)"
